@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>My first D3</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+  </head>
+  <body>
+    <p>Project 1</p>
+    <p>Gabriel Wachowski</p>
+    <p>Project Description: "recreate Dr. John Snow's map using today's
+      tools of trade (D3, to be specific). In addition to recreating the original map
+      in an interactive version, you will add additional charts to the side of the map,
+      as well as interface elements to make the data more interactive."</p>
+<h4>Number of Deaths per Day</h4>
+
+<div id="svg1"></div>
+<div id="svg2"></div>
+<script>
+
+var lineData = [];
+lineData.push({date:new Date(1854, 07, 20), nps:1});
+lineData.push({date:new Date(1854, 07, 21), nps:1});
+lineData.push({date:new Date(1854, 07, 22), nps:0});
+lineData.push({date:new Date(1854, 07, 23), nps:1});
+lineData.push({date:new Date(1854, 07, 24), nps:1});
+lineData.push({date:new Date(1854, 07, 25), nps:0});
+lineData.push({date:new Date(1854, 07, 26), nps:1});
+lineData.push({date:new Date(1854, 07, 27), nps:1});
+lineData.push({date:new Date(1854, 07, 28), nps:1});
+lineData.push({date:new Date(1854, 07, 29), nps:1});
+lineData.push({date:new Date(1854, 07, 30), nps:8});
+lineData.push({date:new Date(1854, 07, 31), nps:56});
+lineData.push({date:new Date(1854, 08, 01), nps:143});
+lineData.push({date:new Date(1854, 08, 02), nps:116});
+lineData.push({date:new Date(1854, 08, 03), nps:54});
+lineData.push({date:new Date(1854, 08, 04), nps:46});
+lineData.push({date:new Date(1854, 08, 05), nps:36});
+lineData.push({date:new Date(1854, 08, 06), nps:20});
+lineData.push({date:new Date(1854, 08, 07), nps:28});
+lineData.push({date:new Date(1854, 08, 08), nps:12});
+lineData.push({date:new Date(1854, 08, 09), nps:11});
+lineData.push({date:new Date(1854, 08, 10), nps:5});
+lineData.push({date:new Date(1854, 08, 11), nps:5});
+lineData.push({date:new Date(1854, 08, 12), nps:1});
+lineData.push({date:new Date(1854, 08, 13), nps:3});
+lineData.push({date:new Date(1854, 08, 14), nps:0});
+lineData.push({date:new Date(1854, 08, 15), nps:1});
+lineData.push({date:new Date(1854, 08, 16), nps:4});
+lineData.push({date:new Date(1854, 08, 17), nps:2});
+lineData.push({date:new Date(1854, 08, 18), nps:3});
+lineData.push({date:new Date(1854, 08, 19), nps:0});
+lineData.push({date:new Date(1854, 08, 20), nps:0});
+lineData.push({date:new Date(1854, 08, 21), nps:2});
+lineData.push({date:new Date(1854, 08, 22), nps:1});
+lineData.push({date:new Date(1854, 08, 23), nps:1});
+lineData.push({date:new Date(1854, 08, 24), nps:1});
+lineData.push({date:new Date(1854, 08, 25), nps:1});
+lineData.push({date:new Date(1854, 08, 26), nps:1});
+lineData.push({date:new Date(1854, 08, 27), nps:1});
+lineData.push({date:new Date(1854, 08, 28), nps:0});
+lineData.push({date:new Date(1854, 08, 29), nps:0});
+lineData.sort(function(a,b){
+    return new Date(b.date) - new Date(a.date);
+});
+
+var height  = 200;
+var width   = 900;
+var hEach   = 40;
+
+var margin = {top: 50, right: 10, bottom: 70, left: 15};
+
+width =     width - margin.left - margin.right;
+height =    height - margin.top - margin.bottom;
+
+var chart1 = d3.select('#svg2').append("svg")
+  .attr("width",  width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+// set the ranges
+var x = d3.scaleTime().range([0, width]);
+
+x.domain(d3.extent(lineData, function(d) { return d.date; }));
+
+
+var y = d3.scaleLinear().range([height, 0]);
+
+
+y.domain([d3.min(lineData, function(d) { return d.nps; }) - 5, 100]);
+
+var valueline = d3.line()
+        .x(function(d) { return x(d.date); })
+        .y(function(d) { return y(d.nps);  })
+        .curve(d3.curveMonotoneX);
+
+chart1.append("path")
+    .data([lineData])
+    .attr("class", "line")
+    .attr("d", valueline);
+
+//  var xAxis_woy = d3.axisBottom(x).tickFormat(d3.timeFormat("Week %V"));
+var xAxis_woy = d3.axisBottom(x).ticks(11).tickFormat(d3.timeFormat("%y-%b-%d")).tickValues(lineData.map(d=>d.date));
+
+chart1.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis_woy)
+        .selectAll("text")
+        .attr("x", 9)
+        .attr("dy", ".35em")
+        .attr("transform", "rotate(90)")
+        .style("text-anchor", "start");
+
+//  Add the Y Axis
+//  svg.append("g").call(d3.axisLeft(y));
+
+chart1.selectAll(".dot")
+    .data(lineData)
+    .enter()
+    .append("circle") // Uses the enter().append() method
+    .attr("class", "dot") // Assign a class for styling
+    .attr("cx", function(d) { return x(d.date) })
+    .attr("cy", function(d) { return y(d.nps) })
+    .attr("r", 5)
+    .style("fill", "red");
+
+
+chart1.selectAll(".text")
+    .data(lineData)
+    .enter()
+    .append("text") // Uses the enter().append() method
+    .attr("class", "label") // Assign a class for styling
+    .attr("x", function(d, i) { return x(d.date) })
+    .attr("y", function(d) { return y(d.nps) })
+    .attr("dy", "-5")
+    .text(function(d) {return d.nps; })
+    .style("fill", "red");
+
+chart1.append('text')
+      .attr('x', 10)
+      .attr('y', -5)
+      .text('Cholera Epidemic');
+      var width = 409;
+      var height = 209;
+      var word = "gongoozler";
+
+      var holder = d3.select("body")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+      // draw a rectangle
+      holder.append("a")
+          .attr("xlink:href", "https://docs.google.com/document/d/1OQJyVtdPwurR1ABJ2f-ZNXejQC3XghAw_0zi29A-dWM/edit?usp=sharing"+word)
+          .append("rect")
+          .attr("x", 100)
+          .attr("y", 50)
+          .attr("height", 100)
+          .attr("width", 200)
+          .style("fill", "lightgreen")
+          .attr("rx", 10)
+          .attr("ry", 10);
+
+      // draw text on the screen
+      holder.append("text")
+          .attr("x", 200)
+          .attr("y", 100)
+          .style("fill", "black")
+          .style("font-size", "20px")
+          .attr("dy", ".35em")
+          .attr("text-anchor", "middle")
+          .style("pointer-events", "none")
+          .text("Documentation");
+
+          var holder = d3.select("body")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+          // draw a rectangle
+          holder.append("a")
+              .attr("xlink:href", "https://docs.google.com/document/d/1OQJyVtdPwurR1ABJ2f-ZNXejQC3XghAw_0zi29A-dWM/edit?usp=sharing"+word)
+              .append("rect")
+              .attr("x", 100)
+              .attr("y", 50)
+              .attr("height", 100)
+              .attr("width", 200)
+              .style("fill", "lightblue")
+              .attr("rx", 10)
+              .attr("ry", 10);
+
+          // draw text on the screen
+          holder.append("text")
+              .attr("x", 200)
+              .attr("y", 100)
+              .style("fill", "black")
+              .style("font-size", "20px")
+              .attr("dy", ".35em")
+              .attr("text-anchor", "middle")
+              .style("pointer-events", "none")
+              .text("YouTube Video");
+
+</script>
+  </body>
+</html>
